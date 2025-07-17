@@ -5,8 +5,18 @@ import 'package:sajomainventory/screens/pages/outboundstock.dart';
 import 'package:sajomainventory/screens/pages/checkstocks.dart';
 import 'package:sajomainventory/screens/pages/startofday.dart';
 import 'package:sajomainventory/database/db_helper.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'main.dart'; // Replace with your actual app import
 
 void main() {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
   runApp(const MyApp());
 }
 
@@ -240,52 +250,15 @@ class DashboardPage extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 children: const [
                   StartOfDayWidget(),
-                  EndOfDayWidget(),
                   InboundStockWidget(),
                   OutboundStockWidget(),
                   StockCheckerWidget(),
+                  EndOfDayWidget(),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class EndOfDayWidget extends StatefulWidget {
-  const EndOfDayWidget({super.key});
-
-  @override
-  _EndOfDayWidgetState createState() => _EndOfDayWidgetState();
-}
-
-class _EndOfDayWidgetState extends State<EndOfDayWidget> {
-  String note = "";
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        tileColor: const Color.fromARGB(255, 244, 108, 54),
-        leading: const Icon(Icons.play_arrow, color: Colors.red),
-        title: const Text("End of Day"),
-        subtitle: Text(note.isEmpty ? "Tap to End the Day" : note),
-        onTap: () async {
-          final isAuthenticated = await showPasswordDialog(context);
-          if (!isAuthenticated) return;
-
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const EndofDayPage()),
-          );
-          if (result != null && result is String) {
-            setState(() {
-              note = result;
-            });
-          }
-        },
       ),
     );
   }
@@ -398,6 +371,43 @@ class _StockCheckerWidgetState extends State<StockCheckerWidget> {
   }
 }
 
+class EndOfDayWidget extends StatefulWidget {
+  const EndOfDayWidget({super.key});
+
+  @override
+  _EndOfDayWidgetState createState() => _EndOfDayWidgetState();
+}
+
+class _EndOfDayWidgetState extends State<EndOfDayWidget> {
+  String note = "";
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        tileColor: const Color.fromARGB(255, 244, 108, 54),
+        leading: const Icon(Icons.play_arrow, color: Colors.red),
+        title: const Text("End of Day"),
+        subtitle: Text(note.isEmpty ? "Tap to End the Day" : note),
+        onTap: () async {
+          final isAuthenticated = await showPasswordDialog(context);
+          if (!isAuthenticated) return;
+
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const EndofDayPage()),
+          );
+          if (result != null && result is String) {
+            setState(() {
+              note = result;
+            });
+          }
+        },
+      ),
+    );
+  }
+}
+
 // 🔒 Reusable Password Prompt Function
 Future<bool> showPasswordDialog(BuildContext context) async {
   final TextEditingController passwordController = TextEditingController();
@@ -476,27 +486,42 @@ class _InventoryListState extends State<InventoryList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Inventory")),
-      body: ListView.builder(
-        itemCount: items.length,
-        itemBuilder: (_, index) {
-          final item = items[index];
-          return ListTile(
-            title: Text(item['name']),
-            subtitle: Text("Qty: ${item['quantity']}"),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () async {
-                await DBHelper.deleteItem(item['id']);
-                loadItems();
+      appBar: AppBar(title: const Text("Inbound Inventory")),
+      body: items.isEmpty
+          ? const Center(child: Text("No stock entries yet"))
+          : ListView.builder(
+              itemCount: items.length,
+              itemBuilder: (_, index) {
+                final item = items[index];
+                return Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  child: ListTile(
+                    title: Text(item['item']),
+                    subtitle: Text(
+                      "Qty: ${item['quantity']} ${item['unit']}\nSource: ${item['source']}",
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        await DBHelper.deleteItem(item['id']);
+                        loadItems();
+                      },
+                    ),
+                  ),
+                );
               },
             ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await DBHelper.insertItem("Test Item", 10);
+          await DBHelper.insertStock(
+            item: "Test Item",
+            quantity: 10,
+            unit: "Units",
+            source: "Test Supplier",
+          );
           loadItems();
         },
         child: const Icon(Icons.add),

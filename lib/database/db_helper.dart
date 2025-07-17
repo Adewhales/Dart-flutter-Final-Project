@@ -6,49 +6,90 @@ class DBHelper {
 
   static Future<Database> get database async {
     if (_db != null) return _db!;
-    _db = await initDB();
+    _db = await initDb();
     return _db!;
   }
 
-  static Future<Database> initDB() async {
+  static Future<Database> initDb() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'sajoma_inventory.db');
 
-    return await openDatabase(
+    return openDatabase(
       path,
       version: 1,
-      onCreate: (Database db, int version) async {
+      onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE inventory(
+          CREATE TABLE inbound_stock (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
+            item TEXT,
             quantity INTEGER,
-            timestamp TEXT
+            unit TEXT,
+            source TEXT
+          )
+        ''');
+
+        await db.execute('''
+          CREATE TABLE outbound_stock (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item TEXT,
+            quantity INTEGER,
+            unit TEXT,
+            recipient TEXT
           )
         ''');
       },
     );
   }
 
-  // Insert data
-  static Future<int> insertItem(String name, int quantity) async {
+  // Inbound stock
+  static Future<void> insertStock({
+    required String item,
+    required int quantity,
+    required String unit,
+    required String source,
+  }) async {
     final db = await database;
-    return await db.insert('inventory', {
-      'name': name,
+    await db.insert('inbound_stock', {
+      'item': item,
       'quantity': quantity,
-      'timestamp': DateTime.now().toIso8601String(),
+      'unit': unit,
+      'source': source,
     });
   }
 
-  // Get all items
   static Future<List<Map<String, dynamic>>> getItems() async {
     final db = await database;
-    return await db.query('inventory');
+    return await db.query('inbound_stock');
   }
 
-  // Delete item
   static Future<int> deleteItem(int id) async {
     final db = await database;
-    return await db.delete('inventory', where: 'id = ?', whereArgs: [id]);
+    return await db.delete('inbound_stock', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Outbound stock
+  static Future<void> insertOutboundStock({
+    required String item,
+    required int quantity,
+    required String unit,
+    required String recipient,
+  }) async {
+    final db = await database;
+    await db.insert('outbound_stock', {
+      'item': item,
+      'quantity': quantity,
+      'unit': unit,
+      'recipient': recipient,
+    });
+  }
+
+  static Future<List<Map<String, dynamic>>> getOutboundItems() async {
+    final db = await database;
+    return await db.query('outbound_stock');
+  }
+
+  static Future<int> deleteOutboundItem(int id) async {
+    final db = await database;
+    return await db.delete('outbound_stock', where: 'id = ?', whereArgs: [id]);
   }
 }

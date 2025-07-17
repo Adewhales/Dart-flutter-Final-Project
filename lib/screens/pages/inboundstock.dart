@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sajomainventory/database/db_helper.dart'; // Make sure this path is correct
 
 class InboundStockPage extends StatefulWidget {
   const InboundStockPage({super.key});
@@ -12,25 +13,48 @@ class _InboundStockPageState extends State<InboundStockPage> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _sourceController = TextEditingController();
 
-  void _submitIncomingStock() {
-    final item = _itemNameController.text.trim();
-    final quantity = _quantityController.text.trim();
-    final source = _sourceController.text.trim();
+  final List<String> _units = [
+    'Dericas',
+    'Bottles',
+    'Bags',
+    'Packs',
+    'Units',
+    'Boxes'
+  ];
+  String? _selectedUnit;
 
-    if (item.isEmpty || quantity.isEmpty) {
+  void _submitIncomingStock() async {
+    final item = _itemNameController.text.trim();
+    final quantityText = _quantityController.text.trim();
+    final source = _sourceController.text.trim();
+    final quantity = int.tryParse(quantityText);
+
+    if (item.isEmpty ||
+        quantity == null ||
+        quantity <= 0 ||
+        _selectedUnit == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Item and quantity are required.')),
+        const SnackBar(
+            content:
+                Text('Please enter valid item, quantity, and select a unit.')),
       );
       return;
     }
 
+    await DBHelper.insertStock(
+      item: item,
+      quantity: quantity,
+      unit: _selectedUnit!,
+      source: source.isEmpty ? 'N/A' : source,
+    );
+
     final result =
-        "Received $quantity x $item from ${source.isEmpty ? "N/A" : source}";
+        "Saved: $quantity $_selectedUnit of $item from ${source.isEmpty ? "N/A" : source}";
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Stock Received'),
+        title: const Text('Stock Logged'),
         content: Text(result),
         actions: [
           TextButton(
@@ -43,6 +67,19 @@ class _InboundStockPageState extends State<InboundStockPage> {
         ],
       ),
     );
+
+    _itemNameController.clear();
+    _quantityController.clear();
+    _sourceController.clear();
+    setState(() => _selectedUnit = null);
+  }
+
+  @override
+  void dispose() {
+    _itemNameController.dispose();
+    _quantityController.dispose();
+    _sourceController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,6 +108,8 @@ class _InboundStockPageState extends State<InboundStockPage> {
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
+            _buildUnitSelector(),
+            const SizedBox(height: 20),
             _buildTextField(
               controller: _sourceController,
               label: 'Source / Supplier (Optional)',
@@ -84,10 +123,8 @@ class _InboundStockPageState extends State<InboundStockPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.greenAccent,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 14,
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 textStyle: const TextStyle(fontSize: 16),
               ),
             ),
@@ -115,6 +152,35 @@ class _InboundStockPageState extends State<InboundStockPage> {
         fillColor: Colors.yellow.shade800,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
       ),
+    );
+  }
+
+  Widget _buildUnitSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Quantity Unit',
+          style: TextStyle(color: Colors.white70, fontSize: 16),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          children: _units.map((unit) {
+            final isSelected = _selectedUnit == unit;
+            return ChoiceChip(
+              label: Text(unit),
+              selected: isSelected,
+              onSelected: (_) => setState(() => _selectedUnit = unit),
+              selectedColor: Colors.greenAccent,
+              backgroundColor: Colors.yellow.shade800,
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.black : Colors.white,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
