@@ -38,7 +38,7 @@ class _CreateUserPageState extends State<CreateUserPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create User'),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: const Color.fromARGB(255, 164, 183, 58),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),

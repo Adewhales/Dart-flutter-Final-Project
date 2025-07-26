@@ -1,38 +1,47 @@
 import 'package:flutter/material.dart';
-import '../widgets/dashboard_card.dart';
 import 'package:sajomainventory/screens/pages/user_management_page.dart';
 import 'package:sajomainventory/screens/pages/reports_page.dart';
+import 'package:sajomainventory/screens/pages/adminsettings_page.dart';
+import '../widgets/dashboard_card.dart';
 
 class DashboardPage extends StatelessWidget {
   final String accountName;
-  final bool isAdmin;
+  final bool isSuperUser;
 
   const DashboardPage({
     super.key,
     required this.accountName,
-    required this.isAdmin,
+    required this.isSuperUser,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$accountName Dashboard'),
-        backgroundColor: Colors.indigo,
+        title: Text(
+          "$accountName Inventory Management System",
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 175, 183, 58),
+        elevation: 4,
       ),
       body: Container(
         padding: const EdgeInsets.all(16),
-        color: Colors.indigo.shade50,
+        color: Colors.deepPurple.shade50,
         child: ListView(
           children: [
             const SizedBox(height: 16),
             Text(
               'Welcome to $accountName',
               style: const TextStyle(
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Colors.indigo,
+                color: Color.fromARGB(255, 183, 181, 58),
               ),
               textAlign: TextAlign.center,
             ),
@@ -77,7 +86,7 @@ class DashboardPage extends StatelessWidget {
                 // Navigate to End of Day page
               },
             ),
-            if (isAdmin) ...[
+            if (isSuperUser) ...[
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 12),
@@ -86,7 +95,7 @@ class DashboardPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.indigo.shade700,
+                  color: Colors.deepPurple.shade700,
                 ),
               ),
               const SizedBox(height: 12),
@@ -110,6 +119,18 @@ class DashboardPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ReportsPage()),
+                  );
+                },
+              ),
+              DashboardCard(
+                title: 'Admin Settings',
+                icon: Icons.settings,
+                color: Colors.indigo,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const AdminSettingsCard()),
                   );
                 },
               ),

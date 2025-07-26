@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sajomainventory/screens/dashboard_page.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
@@ -95,7 +94,10 @@ class _ReportsPageState extends State<ReportsPage> {
           style: TextStyle(fontSize: 16),
         );
       default:
-        return const Text('Select a report to view details.');
+        return const Text(
+          'Select a report to view details.',
+          style: TextStyle(fontSize: 16),
+        );
     }
   }
 }
