@@ -19,7 +19,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  String? _errorMessage;
+  //String? _errorMessage;
   bool _isLoading = false;
   bool _obscurePassword = true;
 
@@ -28,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
     final password = _passwordController.text;
 
     setState(() {
-      _errorMessage = null;
+      ///_errorMessage = null;
       _isLoading = true;
     });
 
@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } else {
       setState(() {
-        _errorMessage = '❌ Invalid email or password.';
+        // _errorMessage = '❌ Invalid email or password.';
         _isLoading = false;
       });
     }

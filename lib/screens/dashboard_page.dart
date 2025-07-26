@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:sajomainventory/main.dart';
+import 'package:sajomainventory/screens/pages/inboundstock.dart';
+import 'package:sajomainventory/screens/pages/outboundstock.dart';
+import 'package:sajomainventory/screens/pages/startofday.dart';
+import 'package:sajomainventory/screens/pages/endofday.dart';
+import 'package:sajomainventory/screens/pages/endofday_summary.dart';
+import 'package:sajomainventory/screens/pages/checkstocks.dart';
 import 'package:sajomainventory/screens/pages/user_management_page.dart';
 import 'package:sajomainventory/screens/pages/reports_page.dart';
 import 'package:sajomainventory/screens/pages/adminsettings_page.dart';
 import '../widgets/dashboard_card.dart';
 
+/// Dashboard page for navigating inventory features.
 class DashboardPage extends StatelessWidget {
   final String accountName;
   final bool isSuperUser;
@@ -19,7 +27,7 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "$accountName Inventory Management System",
+          '$accountName Inventory Management System',
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -46,64 +54,119 @@ class DashboardPage extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
+
+            /// Core dashboard cards
             DashboardCard(
               title: 'Start of Day',
               icon: Icons.play_circle_fill,
               color: Colors.green,
-              onTap: () {
-                // Navigate to Start of Day page
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              onTap: () async {
+                final isAuthenticated = await showPasswordDialog(context);
+                if (!isAuthenticated) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const StartofdayPage()),
+                );
               },
             ),
             DashboardCard(
               title: 'Inbound Stock',
               icon: Icons.download,
               color: Colors.blue,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
               onTap: () {
-                // Navigate to Inbound Stock page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InboundStockPage()),
+                );
               },
             ),
             DashboardCard(
               title: 'Outbound Stock',
               icon: Icons.upload,
               color: Colors.orange,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
               onTap: () {
-                // Navigate to Outbound Stock page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const OutboundStockPage()),
+                );
               },
             ),
             DashboardCard(
               title: 'Stock Checker',
               icon: Icons.search,
               color: Colors.teal,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
               onTap: () {
-                // Navigate to Stock Checker page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CheckstockPage()),
+                );
               },
             ),
             DashboardCard(
               title: 'End of Day',
               icon: Icons.stop_circle,
               color: Colors.red,
-              onTap: () {
-                // Navigate to End of Day page
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              onTap: () async {
+                final isAuthenticated = await showPasswordDialog(context);
+                if (!isAuthenticated) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EndofDayPage()),
+                );
               },
             ),
+
+            /// Admin-only tools
             if (isSuperUser) ...[
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 12),
               Text(
                 'Admin Tools',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.deepPurple.shade700,
+                  color: Color.fromARGB(255, 160, 168, 45),
                 ),
               ),
               const SizedBox(height: 12),
               DashboardCard(
                 title: 'User Management',
                 icon: Icons.admin_panel_settings,
-                color: Colors.purple,
-                onTap: () {
+                color: const Color.fromARGB(255, 167, 176, 39),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                onTap: () async {
+                  final isAuthenticated = await showPasswordDialog(context);
+                  if (!isAuthenticated) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -114,8 +177,15 @@ class DashboardPage extends StatelessWidget {
               DashboardCard(
                 title: 'Reports',
                 icon: Icons.bar_chart,
-                color: Colors.deepPurple,
-                onTap: () {
+                color: const Color.fromARGB(255, 171, 183, 58),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                onTap: () async {
+                  final isAuthenticated = await showPasswordDialog(context);
+                  if (!isAuthenticated) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const ReportsPage()),
@@ -126,7 +196,14 @@ class DashboardPage extends StatelessWidget {
                 title: 'Admin Settings',
                 icon: Icons.settings,
                 color: Colors.indigo,
-                onTap: () {
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                onTap: () async {
+                  final isAuthenticated = await showPasswordDialog(context);
+                  if (!isAuthenticated) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(

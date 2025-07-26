@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:sajomainventory/database/hive_stock_helper.dart';
 
+/// Represents a single outbound stock entry.
 class StockEntry {
-  String item = '';
+  String item;
   String? unit;
-  int quantity = 0;
+  int quantity;
 
   StockEntry({this.item = '', this.unit, this.quantity = 0});
 }
 
-class OutgoingPage extends StatefulWidget {
-  const OutgoingPage({super.key});
+/// Main page for logging outbound stock.
+class OutboundStockPage extends StatefulWidget {
+  const OutboundStockPage({super.key});
 
   @override
-  State<OutgoingPage> createState() => _OutgoingPageState();
+  State<OutboundStockPage> createState() => _OutboundStockPageState();
 }
 
-class _OutgoingPageState extends State<OutgoingPage> {
-  List<StockEntry> entries = [StockEntry()];
+class _OutboundStockPageState extends State<OutboundStockPage> {
+  final List<StockEntry> entries = [StockEntry()];
   final TextEditingController _recipientController = TextEditingController();
 
   final List<String> _units = [
@@ -34,21 +36,22 @@ class _OutgoingPageState extends State<OutgoingPage> {
     'Crates'
   ];
 
+  /// Submits all stock entries to Hive and resets the form.
   Future<void> _submitAllEntries() async {
-    for (var entry in entries) {
-      // ✅ Validate entry
+    for (int i = 0; i < entries.length; i++) {
+      final entry = entries[i];
+
       if (entry.item.isEmpty || entry.unit == null || entry.quantity <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Invalid entry at row ${entries.indexOf(entry) + 1}. Please review all fields.',
+              'Invalid entry at row ${i + 1}. Please review all fields.',
             ),
           ),
         );
         return;
       }
 
-      // ✅ Insert into Hive outbound_stock box
       await HiveStockHelper.insertOutboundStock(
         item: entry.item,
         quantity: entry.quantity,
@@ -59,17 +62,16 @@ class _OutgoingPageState extends State<OutgoingPage> {
       );
     }
 
-    // ✅ Show success dialog
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Stock Out Logged'),
         content: const Text('All outgoing stock entries have been saved.'),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close dialog
+              Navigator.of(context).pop(); // Go back
             },
             child: const Text('Done'),
           ),
@@ -77,8 +79,8 @@ class _OutgoingPageState extends State<OutgoingPage> {
       ),
     );
 
-    // ✅ Reset form
-    setState(() => entries = [StockEntry()]);
+    setState(() => entries.clear());
+    entries.add(StockEntry());
     _recipientController.clear();
   }
 
@@ -98,7 +100,7 @@ class _OutgoingPageState extends State<OutgoingPage> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -107,11 +109,13 @@ class _OutgoingPageState extends State<OutgoingPage> {
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             const SizedBox(height: 10),
+
+            /// List of stock entry cards
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: entries.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (_, index) {
                 final entry = entries[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 8),
@@ -121,15 +125,19 @@ class _OutgoingPageState extends State<OutgoingPage> {
                     child: Column(
                       children: [
                         TextField(
-                          decoration:
-                              const InputDecoration(labelText: 'Item Name'),
+                          decoration: const InputDecoration(
+                            labelText: 'Item Name',
+                            labelStyle: TextStyle(color: Colors.white70),
+                          ),
                           style: const TextStyle(color: Colors.white),
                           onChanged: (val) => entry.item = val.trim(),
                         ),
                         const SizedBox(height: 10),
                         TextField(
-                          decoration:
-                              const InputDecoration(labelText: 'Quantity'),
+                          decoration: const InputDecoration(
+                            labelText: 'Quantity',
+                            labelStyle: TextStyle(color: Colors.white70),
+                          ),
                           keyboardType: TextInputType.number,
                           style: const TextStyle(color: Colors.white),
                           onChanged: (val) =>
@@ -137,7 +145,8 @@ class _OutgoingPageState extends State<OutgoingPage> {
                         ),
                         const SizedBox(height: 10),
                         DropdownButton<String>(
-                          hint: const Text('Select Unit'),
+                          hint: const Text('Select Unit',
+                              style: TextStyle(color: Colors.white70)),
                           value: entry.unit,
                           dropdownColor: Colors.yellow.shade700,
                           items: _units.map((unit) {
@@ -155,12 +164,15 @@ class _OutgoingPageState extends State<OutgoingPage> {
                 );
               },
             ),
+
             const SizedBox(height: 10),
             TextButton.icon(
               onPressed: () => setState(() => entries.add(StockEntry())),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Another Item'),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('Add Another Item',
+                  style: TextStyle(color: Colors.white)),
             ),
+
             const SizedBox(height: 20),
             TextField(
               controller: _recipientController,
@@ -172,6 +184,7 @@ class _OutgoingPageState extends State<OutgoingPage> {
               ),
               style: const TextStyle(color: Colors.white),
             ),
+
             const SizedBox(height: 30),
             ElevatedButton.icon(
               onPressed: _submitAllEntries,

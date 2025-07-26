@@ -199,7 +199,7 @@ class _OutboundStockWidgetState extends State<OutboundStockWidget> {
         onTap: () async {
           final result = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const OutgoingPage()),
+            MaterialPageRoute(builder: (context) => const OutboundStockPage()),
           );
           if (result != null && result is String) {
             setState(() {
