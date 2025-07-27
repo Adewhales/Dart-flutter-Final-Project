@@ -1,5 +1,7 @@
-# wk6assignment1
+# Final Project (INVENTORY MANAGEMENT SYSTEM)
+# Sajoma Inventory Management System
 
+A Flutter-based inventory management system for tracking inbound and outbound stock, user management, and daily operations.
 A new Flutter project.
 
 ## Getting Started
