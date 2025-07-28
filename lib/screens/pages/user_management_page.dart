@@ -15,8 +15,8 @@ class UserManagementPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Management'),
-        backgroundColor: Colors.deepPurple,
+        title: const Text("User Management's Dashboard"),
+        backgroundColor: const Color.fromARGB(255, 163, 161, 10),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -32,7 +32,7 @@ class UserManagementPage extends StatelessWidget {
               icon: const Icon(Icons.person_add),
               label: const Text('Create User'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
+                backgroundColor: const Color.fromARGB(255, 218, 219, 119),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: () {
@@ -47,7 +47,7 @@ class UserManagementPage extends StatelessWidget {
               icon: const Icon(Icons.lock_reset),
               label: const Text('Reset Password'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
+                backgroundColor: const Color.fromARGB(255, 217, 224, 116),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: () {
@@ -62,7 +62,7 @@ class UserManagementPage extends StatelessWidget {
               icon: const Icon(Icons.group_add),
               label: const Text('Assign User to Account'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
+                backgroundColor: const Color.fromARGB(255, 224, 230, 139),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: () {
@@ -78,7 +78,7 @@ class UserManagementPage extends StatelessWidget {
               icon: const Icon(Icons.people),
               label: const Text('View All Users'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
+                backgroundColor: const Color.fromARGB(255, 211, 209, 113),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: () {

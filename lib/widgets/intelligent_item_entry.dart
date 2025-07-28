@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:sajomainventory/models/item.dart';
+import 'package:sajomainventory/models/stock_entry.dart';
 
 class IntelligentItemEntry extends StatefulWidget {
   final StockEntry entry;
@@ -58,9 +58,9 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
           value: isCustomInput ? null : widget.entry.item,
           items: [
             ...itemNames.map((name) => DropdownMenuItem(
-              value: name,
-              child: Text(name),
-            )),
+                  value: name,
+                  child: Text(name),
+                )),
             const DropdownMenuItem(
               value: 'Other',
               child: Text('Add New Item'),
@@ -90,12 +90,23 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
           decoration: const InputDecoration(labelText: 'Unit'),
           value: widget.entry.unit,
           items: [
-            'Dericas', 'Bottles', 'Bags', 'Packs', 'Units',
-            'Boxes', 'Sachets', 'Dozen', 'Kilogram', 'Litre', 'Crates'
-          ].map((unit) => DropdownMenuItem(
-            value: unit,
-            child: Text(unit),
-          )).toList(),
+            'Dericas',
+            'Bottles',
+            'Bags',
+            'Packs',
+            'Units',
+            'Boxes',
+            'Sachets',
+            'Dozen',
+            'Kilogram',
+            'Litre',
+            'Crates'
+          ]
+              .map((unit) => DropdownMenuItem(
+                    value: unit,
+                    child: Text(unit),
+                  ))
+              .toList(),
           onChanged: (val) {
             widget.entry.unit = val;
             widget.onChanged();
@@ -104,44 +115,4 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
       ],
     );
   }
-}
-🧠 In Your Inbound/Outbound Page
-Replace your entry card builder with:
-
-dart
-ListView.builder(
-  itemCount: entries.length,
-  shrinkWrap: true,
-  physics: const NeverScrollableScrollPhysics(),
-  itemBuilder: (context, index) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: IntelligentItemEntry(
-          entry: entries[index],
-          onChanged: () => setState(() {}),
-        ),
-      ),
-    );
-  },
-)
-💾 Save New Items to Hive on Submit
-In your _submitAllEntries() method:
-
-dart
-final itemBox = Hive.box<Item>('item_catalog');
-final existingNames = itemBox.values.map((e) => e.name).toList();
-
-for (var entry in entries) {
-  if (!existingNames.contains(entry.item)) {
-    await itemBox.add(Item(name: entry.item, defaultUnit: entry.unit ?? 'Units'));
-  }
-
-  await DBHelper.insertStock(
-    item: entry.item,
-    quantity: entry.quantity,
-    unit: entry.unit!,
-    source: _sourceController.text.trim().isEmpty ? 'N/A' : _sourceController.text.trim(),
-  );
 }

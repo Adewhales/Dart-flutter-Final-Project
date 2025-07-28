@@ -58,7 +58,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 244, 246, 231),
+      backgroundColor: const Color.fromARGB(255, 221, 223, 214),
       body: Center(
         child: Card(
           elevation: 8,
@@ -71,11 +71,11 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Create Inventory Account',
+                  'Personalized Your Inventory Account',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 37, 33, 243),
+                    color: Color.fromARGB(255, 1, 1, 24),
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -115,7 +115,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: const Color.fromARGB(255, 58, 183, 177),
+                      backgroundColor: const Color.fromARGB(255, 161, 230, 226),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
