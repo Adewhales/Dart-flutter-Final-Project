@@ -19,6 +19,7 @@ dependencies:
   google_fonts: ^6.0.0
   sqflite_common_ffi: ^2.3.0
   cupertino_icons: ^1.0.2
+  connectivity_plus: ^5.0.2  # Use the latest version
 
 dev_dependencies:
   flutter_test:
