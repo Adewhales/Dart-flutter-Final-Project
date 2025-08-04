@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sajomainventory/screens/pages/endofday_summary.dart';
+import 'package:sajomainventory/screens/login.dart'; // Replace with your actual login page
 
 class EndofDayPage extends StatefulWidget {
   const EndofDayPage({super.key});
@@ -18,15 +20,28 @@ class _EndofDayPageState extends State<EndofDayPage> {
     _endTime = DateTime.now();
   }
 
-  void _submitEndOfDay() {
+  Future<void> _submitEndOfDay() async {
     final summary = _summaryController.text;
 
-    Navigator.push(
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('end_of_day_completed', true);
+
+    // ✅ Navigate to summary page, then to login
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => EndOfDaySummaryPage(
           summary: summary,
           endTime: _endTime,
+          onComplete: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      const LoginPage(accountName: '', isSuperUser: false)),
+              (route) => false,
+            );
+          },
         ),
       ),
     );

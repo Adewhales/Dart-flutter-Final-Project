@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sajomainventory/screens/login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StartofdayPage extends StatefulWidget {
   const StartofdayPage({super.key});
@@ -17,10 +19,15 @@ class _StartofdayPageState extends State<StartofdayPage> {
     _startTime = DateTime.now(); // Automatically captures current time
   }
 
-  void _submitStartOfDay() {
+  Future<void> _submitStartOfDay() async {
     final note = _noteController.text;
 
-    // Here you would typically save this data to a backend or local storage.
+    // ✅ Update SharedPreferences flags
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('start_of_day_enabled', true);
+    await prefs.setBool('end_of_day_completed', false);
+
+    // ✅ Show confirmation and navigate to login
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -29,8 +36,18 @@ class _StartofdayPageState extends State<StartofdayPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Return to home screen
+              Navigator.of(context).pop(); // Close dialog
+
+              // ✅ Navigate to LoginPage and clear backstack
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => const LoginPage(
+                    accountName: '',
+                    isSuperUser: false,
+                  ),
+                ),
+                (route) => false,
+              );
             },
             child: const Text('OK'),
           ),

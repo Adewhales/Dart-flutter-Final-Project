@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:math';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:sajomainventory/features/dashboard/dashboard_page.dart';
 import 'package:sajomainventory/features/user_management/add_user_to_account_page.dart';
@@ -22,6 +23,9 @@ import 'package:sajomainventory/screens/pages/create_account_page.dart';
 import 'package:sajomainventory/screens/pages/reset_password_page.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:sajomainventory/utils/auth_utils.dart';
+import 'package:sajomainventory/main.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,7 +62,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sajom Inventory',
+      title: 'Sajoma Inventory',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.latoTextTheme(Theme.of(context).textTheme),
@@ -116,6 +120,51 @@ class _StartOfDayWidgetState extends State<StartOfDayWidget> {
         },
       ),
     );
+  }
+
+  Future<bool> showPasswordDialog(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedCode = prefs.getString('start_of_day_code') ?? '';
+
+    final controller = TextEditingController();
+    String? error;
+
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Enter Start of Day Code'),
+            content: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Code',
+                errorText: error,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (controller.text.trim() == storedCode) {
+                    prefs.setBool('start_of_day_enabled', true); // ✅ activate
+                    Navigator.pop(context, true);
+                  } else {
+                    setState(() => error = 'Incorrect password');
+                  }
+                },
+                child: const Text('Confirm'),
+              ),
+            ],
+          );
+        });
+      },
+    ).then((value) => value ?? false);
   }
 }
 
@@ -303,12 +352,18 @@ class _EndOfDayWidgetState extends State<EndOfDayWidget> {
       ),
     );
   }
+
+  Future showPasswordDialog(BuildContext context) async {}
 }
 
 // ------------------ PASSWORD PROMPT ------------------
-Future<bool> showPasswordDialog(BuildContext context) async {
-  final TextEditingController passwordController = TextEditingController();
+Future<bool> showStartOfDayDialog(BuildContext context) async {
+  final TextEditingController codeController = TextEditingController();
   String? error;
+
+  final prefs = await SharedPreferences.getInstance();
+
+  final storedCode = prefs.getString('start_of_day_code');
 
   return await showDialog<bool>(
     context: context,
@@ -317,15 +372,16 @@ Future<bool> showPasswordDialog(BuildContext context) async {
       return StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: const Text('Enter Password'),
+            title: const Text('Enter Start Code'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                  controller: passwordController,
+                  controller: codeController,
                   obscureText: true,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: '4-digit Code',
                     errorText: error,
                   ),
                 ),
@@ -337,14 +393,12 @@ Future<bool> showPasswordDialog(BuildContext context) async {
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  final password = passwordController.text;
-                  if (password == 'secure123') {
+                onPressed: () async {
+                  if (codeController.text == storedCode) {
+                    await prefs.setBool('start_of_day_enabled', true);
                     Navigator.pop(context, true);
                   } else {
-                    setState(() {
-                      error = 'Incorrect password';
-                    });
+                    setState(() => error = 'Incorrect code');
                   }
                 },
                 child: const Text('Confirm'),
