@@ -17,7 +17,7 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-# count creation and login functionality:
+# Account creation and login functionality:
 1.	Allow users to create an email and password during account creation.
 2.	Store these credentials securely (e.g., using Firestore or SharedPreferences for simplicity).
 3.	Validate the credentials during login
@@ -28,7 +28,7 @@ samples, guidance on mobile development, and a full API reference.
 
 Dashboard screen inventory system. It includes:
 •	A welcome header
-•	Core widgets (Start of Day, Inbound/Outbound Stock, Stock Checker etc.)
+•	Core widgets (Start of Day, Inbound/Outbound Stock, Stock Checker, etc.)
 •	An Admin Settings card shown only to Super Users:
 //Track user role (Super User vs. Regular User)
 //Conditionally show the Admin Settings card
@@ -36,7 +36,7 @@ Dashboard screen inventory system. It includes:
 //Reset password
 //un reports
 //dd users
-//reate users with role assignment
+//create users with role assignment
 #	User Management Page where users can navigate with the help of Buttons to navigate to:
 •	 Create User
 •	Reset Password
@@ -56,9 +56,9 @@ CreateUserPage and ResetPasswordPage. These pages will include:
 •  Ensure item name is selected from item_catalog using Autocomplete
 •  Prompt user to enter a new item name if it doesn't exist
 •  Automatically add new items to item_catalog with selected unit
-•  Prevent submission if unit is missing for new items
+•  Prevent submission if the unit is missing for new items
 
-Out bound Stock
+Outbound Stock
 •	Item names are selected from the Hive box item_catalog instead of free text
 •	Dropdown is used for item selection to ensure consistency and prevent typos
 •	Form validation remains intact
