@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sajomainventory/screens/login.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sajomainventory/screens/login.dart';
 
 class StartofdayPage extends StatefulWidget {
   const StartofdayPage({super.key});
@@ -11,38 +12,59 @@ class StartofdayPage extends StatefulWidget {
 
 class _StartofdayPageState extends State<StartofdayPage> {
   final TextEditingController _noteController = TextEditingController();
-  DateTime _startTime = DateTime.now();
+  late DateTime _startTime;
+  String _accountName = '';
 
   @override
   void initState() {
     super.initState();
-    _startTime = DateTime.now(); // Automatically captures current time
+    _startTime = DateTime.now();
+    _loadAccountName();
+  }
+
+  Future<void> _loadAccountName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _accountName = prefs.getString('account_name') ?? '';
+    });
   }
 
   Future<void> _submitStartOfDay() async {
-    final note = _noteController.text;
+    final note = _noteController.text.trim();
 
-    // ✅ Update SharedPreferences flags
+    // Optional: Validate input
+    if (note.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Note is empty. You can still proceed.')),
+      );
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('start_of_day_enabled', true);
     await prefs.setBool('end_of_day_completed', false);
 
-    // ✅ Show confirmation and navigate to login
+    final formattedTime = DateFormat('yyyy-MM-dd – HH:mm').format(_startTime);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Start of Day Logged'),
-        content: Text('Time: ${_startTime.toLocal()}\nNote: $note'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 48),
+            const SizedBox(height: 12),
+            Text('Time: $formattedTime\nNote: $note'),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop(); // Close dialog
-
-              // ✅ Navigate to LoginPage and clear backstack
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                  builder: (_) => const LoginPage(
-                    accountName: '',
+                  builder: (_) => LoginPage(
+                    accountName: _accountName,
                     isSuperUser: false,
                   ),
                 ),
@@ -58,6 +80,8 @@ class _StartofdayPageState extends State<StartofdayPage> {
 
   @override
   Widget build(BuildContext context) {
+    final formattedTime = DateFormat('yyyy-MM-dd – HH:mm').format(_startTime);
+
     return Scaffold(
       backgroundColor: Colors.yellow.shade900,
       appBar: AppBar(
@@ -71,7 +95,7 @@ class _StartofdayPageState extends State<StartofdayPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Starting Time: ${_startTime.toLocal().toString().split('.')[0]}',
+              'Starting Time: $formattedTime',
               style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 20),

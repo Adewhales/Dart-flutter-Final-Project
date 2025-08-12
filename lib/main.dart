@@ -1,21 +1,23 @@
 import 'dart:io';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:math';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:sajomainventory/features/dashboard/dashboard_page.dart';
-import 'package:sajomainventory/features/user_management/add_user_to_account_page.dart';
-import 'package:sajomainventory/features/user_management/create_user_page.dart';
-import 'package:sajomainventory/features/user_management/reset_password_page.dart';
 import 'package:sajomainventory/models/item.dart';
 import 'package:sajomainventory/models/stock_record.dart';
+import 'package:sajomainventory/screens/dashboard_page.dart';
 import 'package:sajomainventory/screens/login.dart';
+import 'package:sajomainventory/screens/pages/account_details.dart';
+import 'package:sajomainventory/screens/pages/auth_meta.dart';
 import 'package:sajomainventory/screens/pages/endofday.dart';
 import 'package:sajomainventory/screens/pages/inboundstock.dart';
+import 'package:sajomainventory/screens/pages/login_cred.dart';
 import 'package:sajomainventory/screens/pages/outboundstock.dart';
 import 'package:sajomainventory/screens/pages/checkstocks.dart';
 import 'package:sajomainventory/screens/pages/startofday.dart';
 import 'package:sajomainventory/database/db_helper.dart';
+import 'package:sajomainventory/screens/pages/user_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sajomainventory/screens/pages/reports_page.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +28,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:sajomainventory/utils/auth_utils.dart';
 import 'package:sajomainventory/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,13 +43,30 @@ void main() async {
     print('Caught Flutter error: ${details.exception}');
   };
 
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyAdYwcXps0hWS7GjlY4ul6Rr6fDwCKrmms",
+      authDomain: "majosa-2025.firebaseapp.com",
+      projectId: "majosa-2025",
+      storageBucket: "majosa-2025.appspot.com",
+      messagingSenderId: "325433337481",
+      appId: "1:325433337481:web:6a8016afa04f30a4a64858",
+    ),
+  );
+
   await Hive.initFlutter();
   Hive.registerAdapter(ItemAdapter());
   Hive.registerAdapter(StockRecordAdapter());
+  Hive.registerAdapter(UserDetailsAdapter());
 
   await Hive.openBox<Item>('item_catalog');
   await Hive.openBox<StockRecord>('inbound_stock');
   await Hive.openBox<StockRecord>('outbound_stock');
+  await Hive.openBox<AccountDetails>('account_details'); // ✅ use lowercase
+  await Hive.openBox<LoginCred>('login_records');
+  await Hive.openBox<UserRole>('user_roles');
+  await Hive.openBox<AuthMeta>('auth_metadata');
+  await Hive.openBox<UserDetails>('users_details');
 
   final prefs = await SharedPreferences.getInstance();
   final accountName = prefs.getString('inventory_account_name');

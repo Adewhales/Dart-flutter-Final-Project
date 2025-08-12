@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:sajomainventory/models/stock_entry.dart';
+import 'package:sajomainventory/models/stock_record.dart';
+import 'package:sajomainventory/models/item.dart';
 
 class IntelligentItemEntry extends StatefulWidget {
-  final StockEntry entry;
+  final StockRecord entry;
   final VoidCallback onChanged;
 
   const IntelligentItemEntry({
@@ -33,14 +34,15 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
       setState(() {
         isCustomInput = true;
         widget.entry.item = '';
-        widget.entry.unit = null;
+        widget.entry.unit = 'Units'; // Provide a default fallback
       });
     } else {
       final selected = itemList.firstWhere((item) => item.name == value);
       setState(() {
         isCustomInput = false;
         widget.entry.item = selected.name;
-        widget.entry.unit = selected.defaultUnit;
+        widget.entry.unit =
+            selected.defaultUnit ?? 'Units'; // Null-safe assignment
       });
     }
     widget.onChanged();
@@ -55,7 +57,11 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
       children: [
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(labelText: 'Item Name'),
-          value: isCustomInput ? null : widget.entry.item,
+          value: isCustomInput
+              ? null
+              : widget.entry.item.isEmpty
+                  ? null
+                  : widget.entry.item,
           items: [
             ...itemNames.map((name) => DropdownMenuItem(
                   value: name,
@@ -80,6 +86,7 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
         TextFormField(
           decoration: const InputDecoration(labelText: 'Quantity'),
           keyboardType: TextInputType.number,
+          initialValue: widget.entry.quantity.toString(),
           onChanged: (val) {
             widget.entry.quantity = int.tryParse(val) ?? 0;
             widget.onChanged();
@@ -88,7 +95,7 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
         const SizedBox(height: 10),
         DropdownButtonFormField<String>(
           decoration: const InputDecoration(labelText: 'Unit'),
-          value: widget.entry.unit,
+          value: widget.entry.unit.isEmpty ? null : widget.entry.unit,
           items: [
             'Dericas',
             'Bottles',
@@ -108,7 +115,7 @@ class _IntelligentItemEntryState extends State<IntelligentItemEntry> {
                   ))
               .toList(),
           onChanged: (val) {
-            widget.entry.unit = val;
+            widget.entry.unit = val ?? 'Units'; // Null-safe fallback
             widget.onChanged();
           },
         ),

@@ -1,35 +1,38 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'item.dart';
+part of 'user_details.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ItemAdapter extends TypeAdapter<Item> {
+class UserDetailsAdapter extends TypeAdapter<UserDetails> {
   @override
-  final int typeId = 0;
+  final int typeId = 5;
 
   @override
-  Item read(BinaryReader reader) {
+  UserDetails read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Item(
-      name: fields[0] as String,
-      defaultUnit: fields[1] as String,
+    return UserDetails(
+      username: fields[0] as String,
+      password: fields[1] as String,
+      isSuperUser: fields[2] as bool,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Item obj) {
+  void write(BinaryWriter writer, UserDetails obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.username)
       ..writeByte(1)
-      ..write(obj.defaultUnit);
+      ..write(obj.password)
+      ..writeByte(2)
+      ..write(obj.isSuperUser);
   }
 
   @override
@@ -38,7 +41,7 @@ class ItemAdapter extends TypeAdapter<Item> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ItemAdapter &&
+      other is UserDetailsAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

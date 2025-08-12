@@ -9,8 +9,12 @@ class StockEntry {
   int quantity = 0;
   bool isNewItem = false;
 
-  StockEntry(
-      {this.item = '', this.unit, this.quantity = 0, this.isNewItem = false});
+  StockEntry({
+    this.item = '',
+    this.unit,
+    this.quantity = 0,
+    this.isNewItem = false,
+  });
 }
 
 class InboundStockPage extends StatefulWidget {
@@ -57,14 +61,14 @@ class _InboundStockPageState extends State<InboundStockPage> {
             content: Text(
               'Invalid entry at row ${entries.indexOf(entry) + 1}. Please review all fields.',
             ),
+            backgroundColor: Colors.red,
           ),
         );
         return;
       }
 
       if (!existingNames.contains(entry.item)) {
-        await itemBox
-            .add(Item(name: entry.item, defaultUnit: entry.unit ?? 'Units'));
+        await itemBox.add(Item(name: entry.item, defaultUnit: entry.unit!));
       }
 
       await HiveStockHelper.insertInboundStock(
@@ -99,12 +103,6 @@ class _InboundStockPageState extends State<InboundStockPage> {
       itemNames = itemBox.values.map((e) => e.name).toList();
     });
     _sourceController.clear();
-  }
-
-  @override
-  void dispose() {
-    _sourceController.dispose();
-    super.dispose();
   }
 
   Widget _buildItemEntryCard(int index) {
@@ -142,6 +140,7 @@ class _InboundStockPageState extends State<InboundStockPage> {
                   onChanged: (val) {
                     entry.item = val.trim();
                     entry.isNewItem = !itemNames.contains(val.trim());
+                    entry.unit = null; // Reset unit for new item
                   },
                 );
               },
@@ -179,6 +178,12 @@ class _InboundStockPageState extends State<InboundStockPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _sourceController.dispose();
+    super.dispose();
   }
 
   @override

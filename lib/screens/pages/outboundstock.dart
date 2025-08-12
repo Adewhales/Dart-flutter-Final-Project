@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:sajomainventory/database/hive_stock_helper.dart';
+import 'package:sajomainventory/models/item.dart';
 
 /// Represents a single outbound stock entry.
 class StockEntry {
-  String item;
+  String? item;
   String? unit;
   int quantity;
 
-  StockEntry({this.item = '', this.unit, this.quantity = 0});
+  StockEntry({this.item, this.unit, this.quantity = 0});
 }
 
 /// Main page for logging outbound stock.
@@ -21,7 +23,6 @@ class OutboundStockPage extends StatefulWidget {
 class _OutboundStockPageState extends State<OutboundStockPage> {
   final List<StockEntry> entries = [StockEntry()];
   final TextEditingController _recipientController = TextEditingController();
-
   final List<String> _units = [
     'Dericas',
     'Bottles',
@@ -36,12 +37,27 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
     'Crates'
   ];
 
-  /// Submits all stock entries to Hive and resets the form.
+  late List<String> _itemCatalog;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadItemCatalog();
+  }
+
+  void _loadItemCatalog() {
+    final itemBox = Hive.box<Item>('item_catalog');
+    final items = itemBox.values.map((item) => item.name).toList();
+
+    setState(() {
+      _itemCatalog = items.isNotEmpty ? items : ['No items available'];
+    });
+  }
+
   Future<void> _submitAllEntries() async {
     for (int i = 0; i < entries.length; i++) {
       final entry = entries[i];
-
-      if (entry.item.isEmpty || entry.unit == null || entry.quantity <= 0) {
+      if (entry.item == null || entry.unit == null || entry.quantity <= 0) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -53,7 +69,7 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
       }
 
       await HiveStockHelper.insertOutboundStock(
-        item: entry.item,
+        item: entry.item!,
         quantity: entry.quantity,
         unit: entry.unit!,
         recipient: _recipientController.text.trim().isEmpty
@@ -79,9 +95,11 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
       ),
     );
 
-    setState(() => entries.clear());
-    entries.add(StockEntry());
-    _recipientController.clear();
+    setState(() {
+      entries.clear();
+      entries.add(StockEntry());
+      _recipientController.clear();
+    });
   }
 
   @override
@@ -109,8 +127,6 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             const SizedBox(height: 10),
-
-            /// List of stock entry cards
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -124,13 +140,24 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
                     padding: const EdgeInsets.all(12),
                     child: Column(
                       children: [
-                        TextField(
+                        DropdownButtonFormField<String>(
+                          value: _itemCatalog.contains(entry.item)
+                              ? entry.item
+                              : null,
+                          hint: const Text('Select Item Name'),
+                          dropdownColor: Colors.yellow.shade700,
+                          items: _itemCatalog.map((itemName) {
+                            return DropdownMenuItem(
+                              value: itemName,
+                              child: Text(itemName),
+                            );
+                          }).toList(),
+                          onChanged: (val) => setState(() => entry.item = val),
                           decoration: const InputDecoration(
                             labelText: 'Item Name',
                             labelStyle: TextStyle(color: Colors.white70),
                           ),
                           style: const TextStyle(color: Colors.white),
-                          onChanged: (val) => entry.item = val.trim(),
                         ),
                         const SizedBox(height: 10),
                         TextField(
@@ -164,7 +191,6 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
                 );
               },
             ),
-
             const SizedBox(height: 10),
             TextButton.icon(
               onPressed: () => setState(() => entries.add(StockEntry())),
@@ -172,7 +198,6 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
               label: const Text('Add Another Item',
                   style: TextStyle(color: Colors.white)),
             ),
-
             const SizedBox(height: 20),
             TextField(
               controller: _recipientController,
@@ -184,7 +209,6 @@ class _OutboundStockPageState extends State<OutboundStockPage> {
               ),
               style: const TextStyle(color: Colors.white),
             ),
-
             const SizedBox(height: 30),
             ElevatedButton.icon(
               onPressed: _submitAllEntries,

@@ -1,35 +1,38 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'item.dart';
+part of 'login_cred.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class ItemAdapter extends TypeAdapter<Item> {
+class LoginCredAdapter extends TypeAdapter<LoginCred> {
   @override
-  final int typeId = 0;
+  final int typeId = 2;
 
   @override
-  Item read(BinaryReader reader) {
+  LoginCred read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Item(
-      name: fields[0] as String,
-      defaultUnit: fields[1] as String,
+    return LoginCred(
+      username: fields[0] as String,
+      password: fields[1] as String,
+      createdAt: fields[2] as DateTime,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Item obj) {
+  void write(BinaryWriter writer, LoginCred obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.username)
       ..writeByte(1)
-      ..write(obj.defaultUnit);
+      ..write(obj.password)
+      ..writeByte(2)
+      ..write(obj.createdAt);
   }
 
   @override
@@ -38,7 +41,7 @@ class ItemAdapter extends TypeAdapter<Item> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ItemAdapter &&
+      other is LoginCredAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

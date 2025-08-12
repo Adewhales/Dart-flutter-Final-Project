@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sajomainventory/features/user_management/add_user_to_account_page.dart';
 import 'package:sajomainventory/features/user_management/create_user_page.dart';
 import 'package:sajomainventory/features/user_management/reset_password_page.dart';
 import 'package:sajomainventory/features/user_management/user_list_page.dart';
-import 'create_user_page.dart';
-import 'reset_password_page.dart';
-import 'add_user_to_account_page.dart';
-import 'user_list_page.dart';
+import 'package:sajomainventory/screens/pages/user_roles.dart';
+import 'package:sajomainventory/screens/pages/item_management_page.dart';
 
 class UserManagementPage extends StatelessWidget {
   const UserManagementPage({super.key});
@@ -51,9 +48,40 @@ class UserManagementPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ResetPasswordPage()),
+                final usernameController = TextEditingController();
+
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Enter Username'),
+                    content: TextField(
+                      controller: usernameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Username',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final username = usernameController.text.trim();
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ResetPasswordPage(username: username),
+                            ),
+                          );
+                        },
+                        child: const Text('Proceed'),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -68,8 +96,21 @@ class UserManagementPage extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (_) => const AddUserToAccountPage()),
+                  MaterialPageRoute(builder: (_) => const CreateUserPage()),
+                );
+              },
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.inventory),
+              label: const Text('Manage Item Catalog'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 215, 230, 180),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ItemManagementPage()),
                 );
               },
             ),

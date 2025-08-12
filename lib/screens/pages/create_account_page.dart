@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sajomainventory/screens/login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CreateAccountPage extends StatefulWidget {
   const CreateAccountPage({super.key});
@@ -13,6 +14,8 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
   String? _error;
   bool _isLoading = false;
@@ -21,8 +24,10 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final address = _addressController.text.trim();
+    final phone = _phoneController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+    if ([name, email, password, address, phone].any((field) => field.isEmpty)) {
       setState(() => _error = "All fields are required.");
       return;
     }
@@ -33,19 +38,39 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('inventory_account_name', name);
-      await prefs.setString('account_email', email);
-      await prefs.setString('account_password', password);
+      final doc = await FirebaseFirestore.instance
+          .collection('accounts')
+          .doc(name)
+          .get();
 
-      // Navigate to LoginPage with accountName and isSuperUser flag
+      if (doc.exists) {
+        setState(() =>
+            _error = "Inventory name already exists. Redirecting to login...");
+        await Future.delayed(const Duration(seconds: 2));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LoginPage(accountName: name, isSuperUser: false),
+          ),
+        );
+        return;
+      }
+
+      await FirebaseFirestore.instance.collection('accounts').doc(name).set({
+        'email': email,
+        'password': password,
+        'address': address,
+        'phone': phone,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      // Save to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('account_name', name);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => LoginPage(
-            accountName: name,
-            isSuperUser: true, // Set to false if needed
-          ),
+          builder: (_) => LoginPage(accountName: name, isSuperUser: true),
         ),
       );
     } catch (e) {
@@ -100,6 +125,23 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Password',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                TextField(
+                  controller: _addressController,
+                  decoration: const InputDecoration(
+                    labelText: 'Inventory Address',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Telephone Number',
                     border: OutlineInputBorder(),
                   ),
                 ),

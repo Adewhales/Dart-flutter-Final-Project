@@ -1,71 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ResetPasswordPage extends StatefulWidget {
-  const ResetPasswordPage({super.key});
+class ResetPasswordPage extends StatelessWidget {
+  final String username;
 
-  @override
-  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
-}
-
-class _ResetPasswordPageState extends State<ResetPasswordPage> {
-  final _emailController = TextEditingController();
-  final _newPasswordController = TextEditingController();
-  String? _message;
-
-  Future<void> _resetPassword() async {
-    final email = _emailController.text.trim();
-    final newPassword = _newPasswordController.text;
-
-    final prefs = await SharedPreferences.getInstance();
-    final existingEmail = prefs.getString('user_email_$email');
-
-    if (existingEmail == null) {
-      setState(() => _message = 'User not found.');
-      return;
-    }
-
-    await prefs.setString('user_password_$email', newPassword);
-    setState(() => _message = 'Password reset for $email.');
-    _emailController.clear();
-    _newPasswordController.clear();
-  }
+  const ResetPasswordPage({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
+    final newPasswordController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reset Password'),
-        backgroundColor: Colors.deepPurple,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'User Email'),
+            Text(
+              'Reset password for: $username',
+              style: const TextStyle(fontSize: 18),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             TextField(
-              controller: _newPasswordController,
+              controller: newPasswordController,
               obscureText: true,
-              decoration: const InputDecoration(labelText: 'New Password'),
+              decoration: const InputDecoration(
+                labelText: 'New Password',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               icon: const Icon(Icons.lock_reset),
               label: const Text('Reset Password'),
-              onPressed: _resetPassword,
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
+              onPressed: () async {
+                final newPassword = newPasswordController.text.trim();
+
+                if (newPassword.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Password cannot be empty.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                  return;
+                }
+
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('${username}_password', newPassword);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('✅ Password reset successfully.'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                Navigator.pop(context);
+              },
             ),
-            if (_message != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text(_message!,
-                    style: const TextStyle(color: Colors.green)),
-              ),
           ],
         ),
       ),

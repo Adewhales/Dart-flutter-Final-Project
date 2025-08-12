@@ -3,8 +3,8 @@ import 'package:sajomainventory/features/user_management/add_user_to_account_pag
 import 'package:sajomainventory/features/user_management/create_user_page.dart';
 import 'package:sajomainventory/features/user_management/reset_password_page.dart';
 import 'package:sajomainventory/screens/pages/reports_page.dart';
-import 'package:sajomainventory/main.dart';
 import 'package:sajomainventory/utils/auth_utils.dart'; // for generateAndStoreStartCode()
+import 'package:sajomainventory/features/user_management/reset_password_page.dart';
 
 class AdminSettingsCard extends StatelessWidget {
   const AdminSettingsCard({super.key});
@@ -37,7 +37,11 @@ class AdminSettingsCard extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const ResetPasswordPage()),
+                  MaterialPageRoute(builder: (context) {
+                    final dynamic currentUser =
+                        ModalRoute.of(context)!.settings.arguments;
+                    return ResetPasswordPage(username: currentUser.username);
+                  }),
                 );
               },
             ),
@@ -63,8 +67,7 @@ class AdminSettingsCard extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (_) => const AddUserToAccountPage()),
+                  MaterialPageRoute(builder: (_) => const CreateUserPage()),
                 );
               },
             ),

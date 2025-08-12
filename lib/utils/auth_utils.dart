@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Checks if the device has internet connection.
 Future<bool> hasInternetConnection() async {
@@ -21,93 +22,49 @@ Future<String> generateAndStoreStartCode() async {
 }
 
 /// Prompts user to enter their account password.
-Future<bool> confirmPassword(BuildContext context) async {
-  final prefs = await SharedPreferences.getInstance();
-  final storedPassword = prefs.getString('account_password') ?? '';
-  final controller = TextEditingController();
-  String? error;
+Future<bool> confirmPasswordFirestore(
+    BuildContext context, String accountName) async {
+  final passwordController = TextEditingController();
+  bool confirmed = false;
 
-  return await showDialog<bool>(
+  await showDialog(
     context: context,
-    barrierDismissible: false,
-    builder: (context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: const Text('Enter Account Password'),
-          content: TextField(
-            controller: controller,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              errorText: error,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (controller.text.trim() == storedPassword) {
-                  Navigator.pop(context, true);
-                } else {
-                  setState(() => error = 'Incorrect password');
-                }
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
-        );
-      });
-    },
-  ).then((value) => value ?? false);
-}
+    builder: (context) => AlertDialog(
+      title: const Text('Confirm Password'),
+      content: TextField(
+        controller: passwordController,
+        obscureText: true,
+        decoration: const InputDecoration(labelText: 'Enter your password'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            final doc = await FirebaseFirestore.instance
+                .collection('accounts')
+                .doc(accountName)
+                .get();
 
-/// Prompts user to enter the Start of Day code.
-Future<bool> showStartOfDayDialog(BuildContext context) async {
-  final prefs = await SharedPreferences.getInstance();
-  final storedCode = prefs.getString('start_of_day_code') ?? '';
-  final controller = TextEditingController();
-  String? error;
+            final storedPassword = doc.data()?['password'];
+            if (storedPassword == passwordController.text) {
+              confirmed = true;
+              Navigator.pop(context);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text('❌ Incorrect password'),
+                    backgroundColor: Colors.red),
+              );
+            }
+          },
+          child: const Text('Confirm'),
+        ),
+      ],
+    ),
+  );
 
-  return await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) {
-      return StatefulBuilder(builder: (context, setState) {
-        return AlertDialog(
-          title: const Text('Enter Start of Day Code'),
-          content: TextField(
-            controller: controller,
-            obscureText: true,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: '4-digit Code',
-              errorText: error,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (controller.text.trim() == storedCode) {
-                  await prefs.setBool('start_of_day_enabled', true);
-                  Navigator.pop(context, true);
-                } else {
-                  setState(() => error = 'Incorrect code');
-                }
-              },
-              child: const Text('Confirm'),
-            ),
-          ],
-        );
-      });
-    },
-  ).then((value) => value ?? false);
+  return confirmed;
 }

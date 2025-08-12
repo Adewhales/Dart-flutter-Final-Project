@@ -10,7 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   sqflite: ^2.3.0
+  pdf: ^3.10.4
   path_provider: ^2.0.14
+  flutter_email_sender: ^5.0.2
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   printing: ^5.14.2
@@ -19,7 +21,10 @@ dependencies:
   google_fonts: ^6.0.0
   sqflite_common_ffi: ^2.3.0
   cupertino_icons: ^1.0.2
-  connectivity_plus: ^5.0.2  # Use the latest version
+  connectivity_plus: ^5.0.2
+  cloud_firestore: ^4.13.0
+  firebase_core: ^2.25.4  # Use the latest version
+  intl: ^0.18.1
 
 dev_dependencies:
   flutter_test:

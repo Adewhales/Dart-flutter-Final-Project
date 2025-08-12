@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sajomainventory/screens/pages/endofday_summary.dart';
-import 'package:sajomainventory/screens/login.dart'; // Replace with your actual login page
+import 'package:sajomainventory/screens/login.dart';
+import 'package:sajomainventory/services/account_service.dart';
 
 class EndofDayPage extends StatefulWidget {
   const EndofDayPage({super.key});
@@ -13,20 +15,56 @@ class EndofDayPage extends StatefulWidget {
 class _EndofDayPageState extends State<EndofDayPage> {
   final TextEditingController _summaryController = TextEditingController();
   late DateTime _endTime;
+  String _accountName = '';
+  bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
     _endTime = DateTime.now();
+    _loadAccountName();
+  }
+
+  Future<void> _loadAccountName() async {
+    final name = await AccountService.getActiveAccountName('');
+    setState(() {
+      _accountName = name;
+    });
+  }
+
+  Future<void> _confirmEndOfDay() async {
+    final shouldEnd = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm End of Day'),
+        content: const Text('Are you sure you want to end the day?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldEnd == true) {
+      _submitEndOfDay();
+    }
   }
 
   Future<void> _submitEndOfDay() async {
-    final summary = _summaryController.text;
+    setState(() => _isSubmitting = true);
 
+    final summary = _summaryController.text.trim();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('end_of_day_completed', true);
 
-    // ✅ Navigate to summary page, then to login
+    setState(() => _isSubmitting = false);
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -37,8 +75,11 @@ class _EndofDayPageState extends State<EndofDayPage> {
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
-                  builder: (_) =>
-                      const LoginPage(accountName: '', isSuperUser: false)),
+                builder: (_) => LoginPage(
+                  accountName: _accountName,
+                  isSuperUser: false,
+                ),
+              ),
               (route) => false,
             );
           },
@@ -49,6 +90,8 @@ class _EndofDayPageState extends State<EndofDayPage> {
 
   @override
   Widget build(BuildContext context) {
+    final formattedTime = DateFormat('yyyy-MM-dd – HH:mm').format(_endTime);
+
     return Scaffold(
       backgroundColor: Colors.yellow.shade900,
       appBar: AppBar(
@@ -62,7 +105,7 @@ class _EndofDayPageState extends State<EndofDayPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Closing Time: ${_endTime.toLocal().toString().split('.')[0]}',
+              'Closing Time: $formattedTime',
               style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
             const SizedBox(height: 20),
@@ -82,20 +125,22 @@ class _EndofDayPageState extends State<EndofDayPage> {
             ),
             const SizedBox(height: 30),
             Center(
-              child: ElevatedButton.icon(
-                onPressed: _submitEndOfDay,
-                icon: const Icon(Icons.stop_circle_outlined),
-                label: const Text('End Day'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 14,
-                  ),
-                  textStyle: const TextStyle(fontSize: 16),
-                ),
-              ),
+              child: _isSubmitting
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : ElevatedButton.icon(
+                      onPressed: _confirmEndOfDay,
+                      icon: const Icon(Icons.stop_circle_outlined),
+                      label: const Text('End Day'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                    ),
             ),
           ],
         ),
